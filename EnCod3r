@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+import sys
+import os
+import random
+import time
+
+alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.,?\'\"!@#$%^+-=_|&*()[]\\ \n"
+help_message = 'help page wip'
+
+def GenKey():
+	char = list(alpha)
+	code = []
+	for i in alpha:
+		key = random.SystemRandom().randrange(len(char))
+		if char[key] == '\n':
+			code.append(r'\n')
+			char.remove(char[key])
+		else:
+			code.append(char[key])
+			char.remove(char[key])
+	resp = ''.join(code)
+	return(resp)
+
+def Encode(key, file):
+	key = list(''.join(open(key, 'r').read().splitlines()))
+	file = open(file, 'r').readlines()
+	enc_file = []
+	for line in file:
+		for letter in line:
+			for i in range(len(alpha)):
+				if letter == alpha[i]:
+					enc_file.append(key[i])
+					break
+	return(''.join(enc_file))
+
+def Decode(key, file):
+	key = list(''.join(open(key, 'r').read().splitlines()))
+	file = open(file, 'r').readlines()
+	dyc_file = []
+	for line in file:
+		for letter in line:
+			for i in range(len(alpha)):
+				if letter == key[i]:
+					dyc_file.append(alpha[i])
+					break
+	return(''.join(dyc_file))
+
+try:
+	if sys.argv[1] == 'genkey':
+		file_dyc = open('key', "w+")
+		file_dyc.write(GenKey())
+		file_dyc.close()
+	elif (sys.argv[1] in ('-h','-H','help','Help')) or (sys.argv[1] is None):
+		print(help_message)
+	else:
+		file = sys.argv[1]
+		try: 
+			tryfile = open(file, 'r').read().splitlines()
+			try:
+				if sys.argv[2] == '-e':
+					try:
+						text = sys.argv[3]
+						file_enc = open(file+'.enc', "w+")
+						file_enc.write(Encode(text, file))
+						file_enc.close()
+					except IndexError:
+						print('bad encryption key given')
+				elif sys.argv[2] == '-d':
+					try:
+						text = sys.argv[3]
+						file_dyc = open(file+'.dcy', "w+")
+						file_dyc.write(Decode(text, file))
+						file_dyc.close()
+					except IndexError:
+						print('bad encryption key given')
+			except IndexError:
+				print('bad option tag given')
+		except IOError:
+			print("Error: incorrect command or file doesn't seem to exist...")
+			time.sleep(1)
+			print('Use -h for a list of commands')
+except IndexError:
+	print(help_message)
